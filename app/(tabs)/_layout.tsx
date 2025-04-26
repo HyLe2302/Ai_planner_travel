@@ -1,45 +1,23 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import { Ionicons, FontAwesome,MaterialIcons,Feather,AntDesign } from '@expo/vector-icons';
+import { Colors } from '@/constants/Colors'
+import Toast from 'react-native-toast-message';
+import { useState } from 'react'
+import CustomTabBar from './../../Custom/CustomTabBar'
+import React from 'react'
+import { Tabs } from 'expo-router'
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
-  );
+export default function TapLayout() {
+  return (  
+      <Tabs screenOptions={{ headerShown: false }}  tabBar={(props) => <CustomTabBar {...props} />}> 
+        <Tabs.Screen name="mytrip" options={{title:'mytrip'}} />
+        <Tabs.Screen name="discover" options={{title:'discover'}}/>
+        <Tabs.Screen name="profile" options={{title:'profile'}}/>
+        <Tabs.Screen name="aiAgent" options={{title:'aiAgent'}}/>
+      </Tabs>
+  )
 }
+
+const style = StyleSheet.create({
+
+})
