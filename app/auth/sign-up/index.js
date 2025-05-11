@@ -5,8 +5,9 @@ import { useState } from 'react'
 import { Ionicons, FontAwesome,MaterialIcons,Feather,AntDesign } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { Colors } from '@/constants/Colors'
-import { auth } from './../../../configs/FireBaseConfig'
+import { db,auth } from './../../../configs/FireBaseConfig'
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -98,10 +99,8 @@ export default function SignUpScreen() {
         text2: 'Create a successful account ✅ ',
         visibilityTime: 2000,
       });
+      addUserAccount(email, password, name);
       setTimeout(() => {router.push('./sign-in')}, 1000);
-
-
-      // ...
     })
     .catch((error) => {
       const errorCode = error.code;
@@ -117,6 +116,26 @@ export default function SignUpScreen() {
       }
       // ..
     });
+
+    const addUserAccount = async (email, password, name) => {
+      try {
+        const userRef = collection(db, 'UserAccount');
+        const q = query(userRef, where('email', '==', email));
+        const querySnapshot = await getDocs(q);
+    
+        if (!querySnapshot.empty) {
+          return;
+        }
+
+        const docRef = await addDoc(userRef, {
+          email,
+          password,
+          name,
+          createdAt: new Date()
+        });
+    
+      } catch (error) {}
+    };
   }
 
   return ( 

@@ -2,8 +2,13 @@ import { View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { Entypo } from '@expo/vector-icons'
 import { Colors } from '@/constants/Colors'
+import { useRoute } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 
 export default function StartNewTripCard() {
+
+    const router = useRouter();
+
   return (
     <View style={{
         padding:20,
@@ -33,20 +38,22 @@ export default function StartNewTripCard() {
             a new travel experience! Get started below
         </Text>
 
-        <TouchableOpacity style={{
-            padding:15,
-            marginTop:15,
-            backgroundColor:Colors.MAIN,
-            borderRadius:15,
-            paddingHorizontal:30    
-        }}>
-            <Text style={{
-                color:Colors.WHITE,
-                fontFamily:'outfit-medium',
-                fontSize:17
+        <TouchableOpacity 
+            onPress={() => router.push('/create_trip/search_place')}
+            style={{
+                padding:15,
+                marginTop:15,
+                backgroundColor:Colors.MAIN,
+                borderRadius:15,
+                paddingHorizontal:30    
             }}>
-                Start a new trip             
-            </Text>
+                <Text style={{
+                    color:Colors.WHITE,
+                    fontFamily:'outfit-medium',
+                    fontSize:17
+                }}>
+                    Start a new trip             
+                </Text>
         </TouchableOpacity>
 
     </View>

@@ -1,28 +1,18 @@
-import { FlatList,Image, Keyboard, Pressable, StyleSheet,  Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View} from "react-native";
+import { FlatList, Image, Keyboard, Pressable, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View,} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./../../configs/FireBaseConfig"
+import { red } from "react-native-reanimated/lib/typescript/Colors";
+import { useRouter } from "expo-router";
 
-interface IDestination {
-  id: number;
-  city: string;
-  country: string;
-}
-
-interface IArticle {
-  id: number;
-  title: string;
-  author: string;
-}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
     backgroundColor: "#fff",
-    // borderWidth: 1,
-    // borderColor: "red",
   },
   header: {
     flexDirection: "row",
@@ -63,51 +53,45 @@ const styles = StyleSheet.create({
 });
 
 const DiscoverScreen = () => {
-  const navigation: any = useNavigation();
 
+  const router = useRouter();
   const [searchInfo, setSearchInfo] = useState("");
-  const [destinationList, setDestinationList] = useState<IDestination[]>([
-    { id: 1, city: "Tokyo, Tokyo", country: "Japan" },
-    { id: 2, city: "London, England", country: "United Kingdom" },
-    { id: 3, city: "Paris, Île-de-France", country: "France" },
-    { id: 4, city: "New York City, New York", country: "United States" },
-    { id: 5, city: "Rome, Lazio", country: "Italy" },
-    { id: 6, city: "Bangkok, Bangkok", country: "Thailand" },
-    { id: 7, city: "Kuala Lumpur, Kuala Lumpur", country: "Malaysia" },
-    { id: 8, city: "Dubai, Dubai", country: "United Arab Emirates" },
-    { id: 9, city: "Barcelona, Barcelona", country: "Spain" },
-    { id: 10, city: "Madrid, Madrid", country: "Spain" },
-    { id: 11, city: "Las Vegas, Nevada", country: "United States" },
-    {
-      id: 12,
-      city: "Singapore, Central Singapore Community Development Council",
-      country: "Singapore",
-    },
-    { id: 13, city: "Lisbon, Lisbon", country: "Portugal" },
-    { id: 14, city: "Amsterdam, North Holland", country: "Netherlands" },
-    { id: 15, city: "San Francisco, California", country: "United States" },
-    { id: 16, city: "Taipei City, Taipei", country: "Taiwan" },
-    { id: 17, city: "Budapest, Budapest", country: "Hungary" },
-    { id: 18, city: "Orlando, Florida", country: "United States" },
-    { id: 19, city: "Milan, Lombardy", country: "Italy" },
-    { id: 20, city: "Toronto, Ontario", country: "Canada" },
-    { id: 21, city: "Berlin, Berlin", country: "Germany" },
-    { id: 22, city: "Los Angeles, California", country: "United States" },
-    { id: 23, city: "Prague, Praha, Hlavní Město", country: "Czech Republic" },
-    { id: 24, city: "Denpasar, Bali", country: "Indonesia" },
+  const [destinationList, setDestinationList] = useState<any[]>([
+    
   ]);
-  const [articleList, setArticleList] = useState<IArticle[]>([
-    {
-      id: 1,
-      title: "10 Amazing Restaurants in Portland, Oregon",
-      author: "Remedy Apps",
-    },
-    { id: 2, title: "Melbourne's Diverse Food Scene", author: "Remedy Apps" },
-    { id: 3, title: "5 Must-See Places in Tokyo", author: "Remedy Apps" },
+  const [articleList, setArticleList] = useState<any[]>([
+   
   ]);
+
+  const [loadingDestination, setLoadingDestination] = useState(false);
+  const [loadingArticle, setLoadingArticle] = useState(false);
+
+  const getDestinations = async () => {
+    setLoadingDestination(true);
+    setDestinationList([]);
+    const querySnapshot = await getDocs(collection(db, "Destination"));
+    querySnapshot.forEach((doc) => {
+      setDestinationList((prev) => [...prev, { docID: doc.id, ...doc.data() }]);
+    });
+    setLoadingDestination(false);
+  };
+
+  const getArticles = async () => {
+    setLoadingArticle(true);
+    setArticleList([]);
+    const querySnapshot = await getDocs(collection(db, "Article"));
+    querySnapshot.forEach((doc) => {
+      setArticleList((prev) => [...prev, { docID: doc.id, ...doc.data() }]);
+    });
+    setLoadingArticle(false);
+  };
+
+  useEffect(() => {
+    getDestinations();
+    getArticles();
+  }, []);
 
   return (
-    // <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <SafeAreaView edges={["top"]} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Discover</Text>
@@ -115,7 +99,7 @@ const DiscoverScreen = () => {
           name="user"
           size={28}
           color="black"
-          onPress={() => navigation.navigate("profile")}
+          onPress={() => router.push('/(tabs)/profile')}
         />
       </View>
 
@@ -129,7 +113,7 @@ const DiscoverScreen = () => {
               onChangeText={(value) => setSearchInfo(value)}
               placeholder="Search cities..."
               showSoftInputOnFocus={false}
-              onPress={() => navigation.navigate("search")}
+              onPress={() => router.push("/create_trip/search_place")}
             ></TextInput>
           </View>
         </View>
@@ -141,10 +125,15 @@ const DiscoverScreen = () => {
           horizontal
           showsHorizontalScrollIndicator={false}
           data={destinationList}
-          keyExtractor={(item) => item.id + ""}
+          keyExtractor={(item) => item.docID + ""}
           renderItem={({ item }) => {
             return (
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push({
+                pathname: "/article_detail/destination_detail",
+                params: { 
+                  docID: item.docID, 
+                  data: JSON.stringify(item) },
+              })}>
                 <View style={{ maxWidth: 175, marginRight: 30 }}>
                   <Image
                     style={{
@@ -153,7 +142,9 @@ const DiscoverScreen = () => {
                       marginBottom: 10,
                       borderRadius: 10,
                     }}
-                    source={require('./../../assets/images/login1.jpg')}
+                    source={{
+                      uri: item.imageURL,
+                    }}
                   ></Image>
                   <Text
                     style={{ fontSize: 15, fontWeight: 500 }}
@@ -171,6 +162,12 @@ const DiscoverScreen = () => {
               </TouchableOpacity>
             );
           }}
+          refreshControl={
+            <RefreshControl
+              refreshing={loadingDestination}
+              onRefresh={getDestinations}
+            />
+          }
         />
       </View>
 
@@ -183,10 +180,16 @@ const DiscoverScreen = () => {
           horizontal
           showsHorizontalScrollIndicator={false}
           data={articleList}
-          keyExtractor={(item) => item.id + ""}
+          keyExtractor={(item) => item.docID + ""}
           renderItem={({ item }) => {
             return (
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push({
+                  pathname: "/article_detail/article_detail",
+                  params: { 
+                    docID: item.docID,
+                    data: JSON.stringify(item) 
+                  },
+                })}>
                 <View style={{ maxWidth: 250, marginRight: 30 }}>
                   <Image
                     style={{
@@ -195,7 +198,9 @@ const DiscoverScreen = () => {
                       marginBottom: 10,
                       borderRadius: 10,
                     }}
-                    source={require('./../../assets/images/login1.jpg')}
+                    source={{
+                      uri: item.imageURL,
+                    }}
                   ></Image>
                   <Text
                     style={{ fontSize: 15, fontWeight: 500 }}
@@ -213,10 +218,15 @@ const DiscoverScreen = () => {
               </TouchableOpacity>
             );
           }}
+          refreshControl={
+            <RefreshControl
+              refreshing={loadingArticle}
+              onRefresh={getArticles}
+            />
+          }
         />
       </View>
     </SafeAreaView>
-    // </TouchableWithoutFeedback>
   );
 };
 

@@ -45,7 +45,7 @@ export default function SignInScreen() {
       Toast.show({
         type: 'success',
         text1: 'Congratualte',
-        text2: 'Login  successful ',
+        text2: 'Login Successful ',
         visibilityTime: 1000,
       });
       setTimeout(() => {router.push('/(tabs)/mytrip')}, 1000);
