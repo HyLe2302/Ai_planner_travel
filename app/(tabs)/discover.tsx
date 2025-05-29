@@ -4,7 +4,6 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "./../../configs/FireBaseConfig"
-import { red } from "react-native-reanimated/lib/typescript/Colors";
 import { useRouter } from "expo-router";
 
 
@@ -21,7 +20,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   title: {
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: 600,
   },
   form: {
@@ -56,15 +55,37 @@ const DiscoverScreen = () => {
 
   const router = useRouter();
   const [searchInfo, setSearchInfo] = useState("");
-  const [destinationList, setDestinationList] = useState<any[]>([
-    
-  ]);
-  const [articleList, setArticleList] = useState<any[]>([
-   
-  ]);
+  const [destinationList, setDestinationList] = useState<any[]>([]);
+  const [articleList, setArticleList] = useState<any[]>([]);
 
   const [loadingDestination, setLoadingDestination] = useState(false);
   const [loadingArticle, setLoadingArticle] = useState(false);
+
+  const [filteredDestinations, setFilteredDestinations] = useState<any[]>([]);
+  const [filteredArticles, setFilteredArticles] = useState<any[]>([]);
+
+
+  useEffect(() => {
+  if (searchInfo.trim() === "") {
+    setFilteredDestinations(destinationList);
+    setFilteredArticles(articleList);
+  } else {
+    const keyword = searchInfo.toLowerCase();
+
+    const filteredDest = destinationList.filter((item) =>
+      item.city?.toLowerCase().includes(keyword) ||
+      item.country?.toLowerCase().includes(keyword)
+    );
+
+    const filteredArts = articleList.filter((item) =>
+      item.title?.toLowerCase().includes(keyword) ||
+      item.author?.toLowerCase().includes(keyword)
+    );
+
+    setFilteredDestinations(filteredDest);
+    setFilteredArticles(filteredArts);
+  }
+}, [searchInfo, destinationList, articleList]);
 
   const getDestinations = async () => {
     setLoadingDestination(true);
@@ -112,8 +133,8 @@ const DiscoverScreen = () => {
               value={searchInfo}
               onChangeText={(value) => setSearchInfo(value)}
               placeholder="Search cities..."
-              showSoftInputOnFocus={false}
-              onPress={() => router.push("/create_trip/search_place")}
+              showSoftInputOnFocus={true}
+              // onPress={() => router.push("/create_trip/search_place")}
             ></TextInput>
           </View>
         </View>
@@ -124,7 +145,7 @@ const DiscoverScreen = () => {
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={destinationList}
+          data={filteredDestinations}
           keyExtractor={(item) => item.docID + ""}
           renderItem={({ item }) => {
             return (
@@ -179,7 +200,7 @@ const DiscoverScreen = () => {
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={articleList}
+          data={filteredArticles}
           keyExtractor={(item) => item.docID + ""}
           renderItem={({ item }) => {
             return (

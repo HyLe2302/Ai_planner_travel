@@ -2,7 +2,6 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useState } from "react";
 import { GetGeoCoordinates, GetPhotoRef } from "./../../configs/GooglePlaceAPI";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
 
 const styles = StyleSheet.create({
   control: {
@@ -27,8 +26,6 @@ export default function PlaceCard({
   activity: any;
   index: any;
 }) {
-//   const navigation: NavigationProp<RootStackParamList> = useNavigation();
-
   const [photoRef, setPhotoRef] = useState<any>();
   const [coordinates, setCoordinates] = useState<any>();
 

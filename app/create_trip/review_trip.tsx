@@ -5,7 +5,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import React from 'react'
 import { Colors } from "@/constants/Colors";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { push } from "expo-router/build/global-state/routing";
 
 export default function review_trip() {
 

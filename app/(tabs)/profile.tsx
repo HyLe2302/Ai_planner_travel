@@ -1,20 +1,23 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
+import { Keyboard, ScrollView, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { Divider } from "react-native-paper";
+import { Divider, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { auth } from "@/configs/FireBaseConfig";
+import { collection, doc, getDocs, getFirestore, query, updateDoc, where } from "firebase/firestore";
+import Toast from "react-native-toast-message";
+import { Colors } from "@/constants/Colors";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
     backgroundColor: "#fff",
-    // borderWidth: 1,
-    // borderColor: "red",
   },
   header: {
     flexDirection: "row",
@@ -31,11 +34,149 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginBottom: 20,
   },
+  body: {
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+    gap: 10,
+  },
+  description: {
+    color: "gray",
+    fontWeight: 300,
+    marginBottom: 5,
+  },
+  form: {
+    marginTop: 10,
+    paddingHorizontal: 20,
+  },
+
+  form_input_icon: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "#fff",
+  },
+
+  form_input: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 16,
+    color: "#333",
+    height:45,
+    backgroundColor:Colors.WHITE
+  },
+
+  control: {
+    marginTop: 16,
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+
+  button: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#333",
+    width: "100%",
+  },
+
+  button_text: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+
+  name: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 2,
+    color: "#222",
+  },
 });
 
 const Profile = () => {
 
   const router = useRouter();
+  const user = auth.currentUser;
+  const db = getFirestore()
+
+  const [fName, setfName] = useState("");
+  const [currentfName, setCurrentfName] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    const getUserName = async () => {
+      if (user) {
+        const userEmail = user.email;
+        const usersRef = collection(db, "UserAccount");
+        const q = query(usersRef, where("email", "==", userEmail));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const userData = querySnapshot.docs[0].data();
+          setfName(userData.fullName || "");
+          setCurrentfName(userData.fullName || "");
+        } else {
+          console.log("No matching user found in Firestore.");
+        }
+      } else {
+        console.log("No user is logged in.");
+      }
+    };
+
+    getUserName();
+  }, []);
+
+  const updateFName = async () => {
+    Keyboard.dismiss();
+
+    if (!fName) {
+      Toast.show({
+              type: 'error', 
+              text1: 'Wrong',
+              text2: 'Please enter your full name',
+              visibilityTime: 3000,
+            });
+      return;
+    }
+
+    try {
+      const userRef = collection(db, "UserAccount");
+      const q = query(userRef, where("email", "==", user?.email));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        Toast.show({
+              type: 'error', 
+              text1: 'Wrong',
+              text2: 'User not found',
+              visibilityTime: 3000,
+            });
+        return;
+      }
+
+      querySnapshot.forEach(async (userDoc) => {
+        await updateDoc(doc(db, "UserAccount", userDoc.id), {
+          fullName: fName
+        });
+        setCurrentfName(fName);
+        Toast.show({
+        type: 'success',
+        text1: 'Congratualte',
+        text2: 'Full Name has been successfully updated! ',
+        visibilityTime: 1000,
+      });
+      });
+    } catch (error) {
+      console.log(error)
+    }
+  };
 
   return (
     <SafeAreaView edges={["top"]} style={styles.container}>
@@ -45,10 +186,53 @@ const Profile = () => {
           name="user"
           size={28}
           color="black"
-          // onPress={() => navigation.navigate("profile")}
         />
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.body}>
+          <AntDesign name="user" size={36} color="black" />
+          <Text style={styles.name } onPress={() => setIsEditing(true)}>{currentfName}</Text>
+          <Text style={styles.description}>{user?.email}</Text>
+        </View>
+
+        {isEditing && (
+          <>
+            <View style={styles.form}>
+              <View style={styles.form_input_icon}>
+                <AntDesign name="user" size={24} color="black" />
+                <TextInput
+                  style={styles.form_input}
+                  value={fName}
+                  onChangeText={(value) => setfName(value)}
+                  placeholder="Enter Your Full Name"
+                />
+                {!!fName && (
+                  <AntDesign
+                    name="close"
+                    size={24}
+                    color="black"
+                    onPress={() => setfName("")}
+                  />
+                )}
+              </View>
+            </View>
+
+            <View style={styles.control}>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: "#333" }]}
+                onPress={async () => {
+                  await updateFName();
+                  setIsEditing(false);
+                }}
+              >
+                <Text style={[styles.button_text, { color: "#fff" }]}>
+                  Save changes
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
         <View style={{ marginBottom: 20 }}>
           <Text style={styles.heading}>App</Text>
           <TouchableOpacity>
@@ -364,20 +548,6 @@ const Profile = () => {
                   color="black"
                   style={{ marginRight: 30 }}
                 />
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text
-                    style={{ fontSize: 15, fontWeight: 500 }}
-                    numberOfLines={1}
-                  >
-                    Terms of Service
-                  </Text>
-                  <Text
-                    style={{ color: "gray", fontWeight: 300 }}
-                    numberOfLines={1}
-                  >
-                    How we run things around here
-                  </Text>
-                </View>
               </View>
               <Entypo name="chevron-right" size={24} color="black" />
             </View>

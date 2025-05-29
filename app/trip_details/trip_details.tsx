@@ -54,23 +54,10 @@ const TripDetailScreen = () => {
     setTripDetails(trip); 
   }, []);
 
-  return (
-    <>
-    <Stack.Screen
-        options={{
-          headerRight: () => (
-            <MaterialIcons
-              name="explore"
-              size={24}
-              color="black"
-              style={{ marginRight: 15 }}
-              // onPress={() => router.push({ pathname: '/map', params: { trip: JSON.stringify(trip) } })}
-            />
-          ),
-        }}
-      />
+  
 
-    {tripDetails && (
+  return (
+    
       <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
         
         <View style={{ position: "relative" }}>
@@ -88,12 +75,16 @@ const TripDetailScreen = () => {
             }}
           />
           <TouchableOpacity
-            onPress={() =>
+            onPress={() =>{
+              const parsedTripDetails = {
+                ...tripDetails,
+                tripData: JSON.parse(tripDetails.tripData),
+              };
               router.push({
                 pathname: "/trip_details/map",
-                params: { trip: JSON.stringify(tripDetails) },
+                params: { trip: JSON.stringify(parsedTripDetails) },
               })
-            }
+            }}
             style={{
               position: "absolute",
               top: 15,
@@ -218,10 +209,7 @@ const TripDetailScreen = () => {
           </View>
         </View>
       </ScrollView>
-    )}
-    </>
-  );
-  
+  )
 };
 
 export default TripDetailScreen;

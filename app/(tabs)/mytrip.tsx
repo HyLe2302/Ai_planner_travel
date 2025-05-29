@@ -2,7 +2,6 @@ import { View, Text, RefreshControl, ScrollView, TouchableOpacity, FlatList, Sty
 import React, { useEffect, useState } from 'react'
 import { Colors } from '@/constants/Colors'
 import { AntDesign, FontAwesome6, Ionicons } from '@expo/vector-icons'
-import StartNewTripCard from '@/components/MyTrips/StartNewTripCard';
 import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from "./../../configs/FireBaseConfig";
 import { SafeAreaView } from "react-native-safe-area-context";

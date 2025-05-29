@@ -34,9 +34,7 @@ const MapScreen = () => {
 
   const router = useRouter();
   const params = useLocalSearchParams();
-  let loc: any = null;
-  loc = JSON.parse(params.trip as string);
-  console.log(loc); 
+
 
   const mapRef = useRef<any>();
   const focusMap = () => {
@@ -107,7 +105,15 @@ const MapScreen = () => {
 
   useEffect(() => {
     userLocation();
-    setTripDetails(JSON.parse(loc));
+    // setTripDetails(JSON.parse(loc));
+    try {
+      if (params.trip) {
+        const parsed = JSON.parse(params.trip as string);
+        setTripDetails(parsed); // parse 1 lần là đủ
+      }
+    } catch (error) {
+      console.error("Failed to parse trip params:", error);
+    }
   }, []);
 
   useEffect(() => {
