@@ -5,7 +5,7 @@ import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View,}
 import HotelCard from "./HotelCard";
 import PlaceCard from "./PlaceCard";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 const styles = StyleSheet.create({
   container: {

@@ -110,28 +110,58 @@ const Profile = () => {
   const [currentfName, setCurrentfName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
+  // useEffect(() => {
+  //   const getUserName = async () => {
+  //     if (user) {
+  //       const userEmail = user?.email;
+  //       const usersRef = collection(db, "UserAccount");
+  //       const q = query(usersRef, where("email", "==", userEmail));
+  //       const querySnapshot = await getDocs(q);
+
+  //       if (!querySnapshot.empty) {
+  //         const userData = querySnapshot.docs[0].data();
+  //         console.log("sas",userData)
+  //         setfName(userData.name || "");
+  //         setCurrentfName(userData.name || "");
+  //       } else {
+  //         console.log("No matching user found in Firestore.");
+  //       }
+  //     } else {
+  //       console.log("No user is logged in.");
+  //     }
+  //   };
+
+  //   getUserName();
+  // }, []);
+
   useEffect(() => {
-    const getUserName = async () => {
-      if (user) {
-        const userEmail = user.email;
+  const getUserName = async () => {
+    try {
+      if (user && user.email) {
+        const userEmail = user?.email;
         const usersRef = collection(db, "UserAccount");
         const q = query(usersRef, where("email", "==", userEmail));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
-          const userData = querySnapshot.docs[0].data();
-          setfName(userData.fullName || "");
-          setCurrentfName(userData.fullName || "");
+          const doc = querySnapshot.docs[0];
+          const userData = doc.data();
+          
+          setfName(userData.name || "");
+          setCurrentfName(userData.name || "");
         } else {
-          console.log("No matching user found in Firestore.");
+          console.log("❌ Không tìm thấy user với email:", userEmail);
         }
       } else {
-        console.log("No user is logged in.");
+        console.log("❌ Chưa đăng nhập hoặc thiếu email.");
       }
-    };
+    } catch (error) {
+      console.error("🔥 Lỗi khi lấy dữ liệu user từ Firestore:", error);
+    }
+  };
 
-    getUserName();
-  }, []);
+  getUserName();
+}, [user]);
 
   const updateFName = async () => {
     Keyboard.dismiss();
@@ -163,7 +193,7 @@ const Profile = () => {
 
       querySnapshot.forEach(async (userDoc) => {
         await updateDoc(doc(db, "UserAccount", userDoc.id), {
-          fullName: fName
+          name: fName
         });
         setCurrentfName(fName);
         Toast.show({
